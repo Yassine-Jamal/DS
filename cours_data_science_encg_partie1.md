@@ -2,6 +2,8 @@
 
 # JAMAL YASSINE
 
+<img src="JAMAL YASSINE CAC2.jpg" style="height:464px;margin-right:432px"/>
+
 ## TEST
 ## École Nationale de Commerce et de Gestion (ENCG) - 4ème Année
 
