@@ -1,60 +1,113 @@
-# Wine Quality Analysis
+# Analyse approfondie de la base de données "Wine Quality"
 # Source: UCI Machine Learning Repository
-# Dataset: https://archive.ics.uci.edu/dataset/186/wine+quality
-# Reference: Cortez, P., Cerdeira, A., Almeida, F., Matos, T., & Reis, J. (2009). Wine Quality [Dataset]. UCI Machine Learning Repository.
+# Référence: Cortez, P., Cerdeira, A., Almeida, F., Matos, T., & Reis, J. (2009)
+# Lien : https://archive.ics.uci.edu/dataset/186/wine+quality
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 
-# --- Dataset Info ---
-"""
-- Étude réalisée par le département Informatique, Universidade do Minho, Portugal.
-- But : prédire la qualité du vin (score 0-10) à partir des propriétés physico-chimiques (11 variables).
-- Les données contiennent deux sous-groupes : vins rouges et vins blancs.
-- Utilisations : analyse exploratoire, classification, régression, sélection de variables, détection d'outliers.
-"""
-
-# --- Chargement des données ---
+# ============================
+# 1. Chargement des données
+# ============================
 red = pd.read_csv('winequality-red.csv', sep=';')
 white = pd.read_csv('winequality-white.csv', sep=';')
 
-# --- Vue rapide ---
-print("Red wine shape:", red.shape)
-print("White wine shape:", white.shape)
-print("Red wine variables:", list(red.columns))
-print("White wine variables:", list(white.columns))
+# Affichage des dimensions des jeux de données
+print(f"Nombre d'échantillons (vin rouge): {red.shape[0]}")
+print(f"Nombre d'échantillons (vin blanc): {white.shape[0]}")
 
-# --- Statistiques descriptives ---
-print("Red wine descriptive statistics:")
+# ============================
+# 2. Description des variables
+# ============================
+print("\nVariables disponibles :")
+for col in red.columns:
+    print(f"- {col}")
+
+# ============================
+# 3. Aperçu des données
+# ============================
+print("\nAperçu des premières lignes (vin rouge) :")
+print(red.head())
+
+# ============================
+# 4. Statistiques descriptives
+# ============================
+print("\nStatistiques descriptives des vins rouges :")
 print(red.describe())
-print("White wine descriptive statistics:")
+print("\nStatistiques descriptives des vins blancs :")
 print(white.describe())
 
-# --- Distribution des scores de qualité ---
-plt.figure(figsize=(10,4))
+# ============================
+# 5. Visualisation de la distribution de la qualité
+# ============================
+plt.figure(figsize=(12,5))
 plt.subplot(1,2,1)
-red['quality'].hist(color='red', bins=7)
-plt.title('Red Wine Quality Distribution')
-plt.xlabel('Quality Score')
-plt.ylabel('Frequency')
+sns.countplot(x='quality', data=red, palette='Reds')
+plt.title("Distribution de la qualité - Vin rouge")
+plt.xlabel("Score de qualité")
+plt.ylabel("Nombre d'échantillons")
 
 plt.subplot(1,2,2)
-white['quality'].hist(color='grey', bins=7)
-plt.title('White Wine Quality Distribution')
-plt.xlabel('Quality Score')
-plt.ylabel('Frequency')
-
+sns.countplot(x='quality', data=white, palette='Blues')
+plt.title("Distribution de la qualité - Vin blanc")
+plt.xlabel("Score de qualité")
+plt.ylabel("Nombre d'échantillons")
 plt.tight_layout()
 plt.show()
+# On constate que la plupart des vins ont des scores moyens : il y a peu de vins "excellents" ou "très mauvais".
 
-# --- Citation ---
+# ============================
+# 6. Analyse des corrélations
+# ============================
+plt.figure(figsize=(10,8))
+sns.heatmap(red.corr(), cmap='Reds', annot=True, fmt=".2f")
+plt.title("Matrice de corrélations (vin rouge)")
+plt.show()
+
+# Les variables comme l'alcool semblent avoir une corrélation positive avec la qualité du vin rouge.
+# En revanche, la densité et l'acidité volatile montrent des corrélations négatives.
+
+# ============================
+# 7. Comparaison Rouge / Blanc sur quelques variables
+# ============================
+plt.figure(figsize=(10,6))
+sns.boxplot(data=[red['alcohol'], white['alcohol']], notch=True)
+plt.xticks([0,1], ['Rouge', 'Blanc'])
+plt.title('Distribution de l\'alcool (%)')
+plt.show()
+
+# Les vins blancs ont en général un niveau d'alcool légèrement supérieur aux rouges.
+
+# ============================
+# 8. Relation entre alcool et qualité
+# ============================
+plt.figure(figsize=(10,5))
+sns.boxplot(x='quality', y='alcohol', data=red, palette='Reds')
+plt.title('Relation entre alcool et qualité - Vin rouge')
+plt.xlabel('Qualité')
+plt.ylabel('Alcool (%)')
+plt.show()
+
+# Plus le score de qualité est élevé, plus l'alcool tend à être élevé.
+
+# ============================
+# 9. Interprétation générale
+# ============================
+""" 
+Commentaire :
+- La qualité du vin dépend de multiples facteurs, parmi lesquels l'acidité volatile (corrélation souvent négative), le taux d'alcool (corrélation positive), et la densité.
+- Les scores de qualité sont déséquilibrés (majorité de scores moyens).
+- L'analyse met en avant l'intérêt de sélectionner judicieusement les variables pour bâtir un modèle prédictif robuste.
+- Ce jeu de données illustre bien les défis classiques en data science appliquée à l'œnologie : multicolinéarité, classes déséquilibrées, importance de l'analyse exploratoire préalable.
 """
-Données fournies par:
-- P. Cortez, A. Cerdeira, F. Almeida, T. Matos, J. Reis (2009)
-- Publication: Decision Support Systems
-- DOI: 10.24432/C56S3T
-- Licence: Creative Commons Attribution 4.0 International (CC BY 4.0)
+
+# ============================
+# 10. Référence
+# ============================
 """
-
-# Pour approfondir, consulte l’article original : http://www3.dsi.uminho.pt/pcortez/wine/
-
+Données issues de l’étude : 
+Cortez, P., Cerdeira, A., Almeida, F., Matos, T., & Reis, J. (2009). 
+Wine Quality [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C56S3T
+Licencié sous Creative Commons Attribution 4.0
+"""
