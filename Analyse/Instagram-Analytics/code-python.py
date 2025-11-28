@@ -1,14 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Prédiction du Taux d'Engagement Instagram
-=========================================
-Analyse complète de données Instagram avec comparaison de modèles de régression.
-
-Auteur: [Votre Nom]
-Date: 2024
-"""
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
