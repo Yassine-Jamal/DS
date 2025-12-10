@@ -1,3 +1,6 @@
+<img src="https://www.encgs.ac.ma/wp-content/uploads/2024/06/logo.png"
+     alt="Logo ENCG Settat"
+     style="height:300px; margin-right:300px; float:left; border-radius:10px;">
 ---
 # 📘 GRAND GUIDE : ANATOMIE D'UN PROJET DATA SCIENCE - DIGITS
 
