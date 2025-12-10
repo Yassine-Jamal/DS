@@ -26,8 +26,7 @@ Dataset **Digits** de Scikit-Learn
 
 ## 2. Le Code Python (Laboratoire)
 
-Ce script est votre paillasse de laboratoire. Il contient toutes les manipulations nécessaires.
-
+```python
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -101,100 +100,146 @@ plt.title('Matrice de Confusion : Réalité vs IA')
 plt.ylabel('Vrai Chiffre')
 plt.xlabel('Chiffre Prédit')
 plt.show()
+```
 
 
 ---
 
 ## 3. Analyse Approfondie : Nettoyage (Data Wrangling)
 
-### Le Problème Mathématique du "Vide"
-Les algorithmes ML (algèbre linéaire) ne peuvent pas gérer `NaN`. Les 5760 valeurs manquantes injectées (5% × 64 pixels × 1797 lignes) cassent tous les calculs matriciels.
+### Le Problème Mathématique du « Vide »
 
-### La Mécanique de l'Imputation
-`SimpleImputer(strategy='mean')` en 2 étapes :
-1. **fit** : Calcule $\\mu$ (moyenne) par colonne
-2. **transform** : Injecte $\\mu$ à chaque trou
+Les algorithmes de Machine Learning ne savent pas manipuler les valeurs `NaN`. Une seule valeur manquante dans un vecteur peut faire échouer le calcul de distances ou de probabilités. 
+Dans ce projet, 5 % des valeurs de chaque feature ont été remplacées par `NaN`, soit plusieurs milliers de « trous » à combler avant d’entraîner un modèle. 
 
-### 💡 Le Coin de l'Expert (Data Leakage ⚠️)
-*Attention :* Imputation **AVANT** split Train/Test = **ERREUR**
-*   Moyenne Train fuit dans Test → scores gonflés
-*   **Solution pro** : `Pipeline([('imputer', SimpleImputer()), ('rf', RandomForest())])`
+### La Mécanique de l’Imputation
+
+On utilise `SimpleImputer(strategy="mean")` qui suit deux étapes :
+1. **Apprentissage (`fit`) :**  
+   Pour chaque colonne `pixel_i`, l’algorithme calcule la moyenne \(\mu_i\) des valeurs non manquantes et la stocke.
+
+2. **Transformation (`transform`) :**  
+   Chaque `NaN` de `pixel_i` est remplacé par \(\mu_i\), ce qui donne une matrice `X_clean` entièrement numérique, sans valeurs manquantes.
+
+Résultat : les modèles basés sur l’algèbre linéaire (et ici le Random Forest) peuvent fonctionner sans erreur liée aux `NaN`. 
+### 💡 Le Coin de l’Expert (Data Leakage)
+
+Dans ce script, le nettoyage est fait **avant** la séparation Train/Test. 
+
+- **Problème :** Les moyennes utilisées pour imputer le Test Set ont été calculées en utilisant également les données du Test → fuite d’information (« Data Leakage »). 
+- **Bonne pratique absolue :**  
+  - Faire le split Train/Test en premier.  
+  - Apprendre les moyennes (`fit`) uniquement sur le Train.  
+  - Appliquer la transformation (`transform`) sur le Test avec ces mêmes moyennes (souvent via un `Pipeline` Scikit-Learn).
 
 ---
 
 ## 4. Analyse Approfondie : Exploration (EDA)
 
 ### Décrypter `.describe()`
-```
-pixel_0: mean=0.0 std=0.0 → inutile (bord noir)
-pixel_20: mean=5.2 std=4.6 → informatif (centre image)
-```
-* **mean >> median** = distribution asymétrique
-* **std≈0** = feature à supprimer
 
-### La Multicollinéarité
-Heatmap montre corrélations >0.7 entre pixels voisins (logique géométrique)
-* RF gère bien, mais régression linéaire planterait
+Les statistiques descriptives sur les 10 premiers pixels donnent un premier profil du dataset Digits : 
+
+- Des pixels avec `mean = 0` et `std = 0` (comme certains pixels de bord) n’apportent aucune information utile, car ils sont toujours noirs.  
+- Des pixels centraux ont des moyennes et des écarts‑types plus élevés, montrant qu’ils captent la forme des chiffres. 
+
+Comparer **mean** et **50 % (médiane)** permet de repérer des distributions asymétriques (skewness) : une moyenne beaucoup plus élevée que la médiane peut indiquer la présence de quelques intensités très fortes. 
+
+### Les Visualisations Clés
+
+Trois visualisations structurent le « profilage » : 
+
+- **Panel d’images 8×8** : montrer visuellement quelques chiffres (0–9) permet de relier les intensités de pixels à des formes concrètes.  
+- **Distribution de `pixel_20` par classe** : visualiser l’histogramme de ce pixel pour chaque chiffre permet de voir si ce pixel est discriminant.  
+- **Matrice de corrélation (20 premiers pixels)** : la heatmap met en évidence des groupes de pixels très corrélés, souvent voisins dans l’image, ce qui reflète la structure géométrique des chiffres manuscrits.  
 
 ---
 
 ## 5. Analyse Approfondie : Méthodologie (Split)
 
-### Le Concept : Garantie de Généralisation
-80/20 Pareto : assez de Train pour apprendre, assez de Test pour juger
+### Le Concept : La Garantie de Généralisation
 
-### Paramètres critiques
-```
-test_size=0.2 → 360 images test
-random_state=42 → science reproductible
-stratify=y → 10% chaque chiffre Train ET Test
-```
+Le but du Machine Learning est de **généraliser** sur de nouveaux chiffres manuscrits, pas d’apprendre par cœur les 1 797 exemples.   
+Un split **80 % / 20 %** permet :
 
----
+- D’avoir suffisamment de données pour apprendre la variabilité de l’écriture.  
+- De réserver un jeu de test indépendant pour estimer la performance en situation réelle.  
 
-## 6. FOCUS THÉORIQUE : Random Forest 🌲 (200 arbres)
+### Les Paramètres sous le Capot
 
-### A. Faiblesse Arbre unique
-Overfit : `pixel_13>8.2 AND pixel_20<3.1 → "4"` (règle trop spécifique)
+L’appel à `train_test_split` utilise :
 
-### B. Force du Groupe
-1. **Bootstrap** : Arbre#1 voit patients A,B,C ; Arbre#2 voit A,C,D
-2. **Feature Randomness** : $\\sqrt{64}=8$ pixels aléatoires par split
-3. **Vote majoritaire** : Erreurs individuelles s'annulent
+- `test_size=0.2` : ≈ 360 images de test.  
+- `random_state=42` : graine fixée pour un partitionnement reproductible.  
+- `stratify=y` : garantie que chaque classe (0–9) est représentée de manière équilibrée dans Train et Test.
 
-### C. Parfait pour Digits
-* 64 features corrélées → OK
-* 10 classes → vote robuste
-* Bruit pixels → résistant
+Sans `stratify`, certaines classes rares pourraient être sous‑représentées dans le jeu de test, faussant l’analyse des performances par chiffre. 
 
 ---
 
-## 7. Analyse Approfondie : Évaluation
+## 6. FOCUS THÉORIQUE : L’Algorithme Random Forest 🌲
 
-### A. Matrice Confusion (10×10)
-```
-Diagonale : 95%+ accuracy
-Confusions : 3↔5, 4↔9 (traits similaires)
-```
+### A. La Faiblesse de l’Arbre Isolé
 
-### B. Métriques avancées
-```
-Precision 9: 0.97 → "9" prédit = VRAI 9
-Recall 4: 0.94 → 94% vrais "4" détectés
-F1 macro: 0.96 → performance homogène
-```
+Un seul arbre de décision apprend une succession de règles du type :  
+« si tel pixel > seuil et tel autre pixel < seuil, alors chiffre = 3 ».  
+Ce type de modèle a une **variance élevée** : il peut surapprendre des détails spécifiques à l’échantillon d’entraînement (overfitting). 
 
-### Conclusion Projet
-**Data Science ≠ model.fit()**. C'est une chaîne métier-ML :
-1. **OCR → Digits** : 64 pixels → classifieur
-2. **Wrangling → EDA** : 5760 NaN → corrélations spatiales
-3. **Split → RF** : 80/20 stratifié → 96% F1
-4. **Audit** : confusions 3/5/4/9 → CNN next
+### B. La Force du Groupe (Bagging + Aléa)
 
-**Leçons** :
-- Pipeline > code brut
-- Visualisez la matrice confusion
-- `Pipeline()` corrige data leakage
-```
+Le Random Forest construit une forêt d’arbres hétérogènes grâce à deux sources d’aléa : 
 
+1. **Bootstrapping des données**  
+   Chaque arbre est entraîné sur un échantillon tiré avec remise du jeu d’entraînement (certains exemples sont répétés, d’autres absents).
 
+2. **Aléa sur les features**  
+   À chaque split, l’arbre ne choisit la meilleure coupure qu’au sein d’un sous‑ensemble aléatoire de pixels, ce qui diversifie les règles apprises.
+
+En prédiction, les arbres votent, et la classe finale est choisie par **majorité**. Les erreurs individuelles se compensent, et le modèle final est plus stable. 
+
+### C. Pourquoi Random Forest est adapté à Digits
+
+- Il gère bien les **features corrélées** (pixels voisins dans l’image).  
+- Il supporte nativement les problèmes **multi‑classes** (10 chiffres). 
+- Il est robuste au **bruit** et aux petites variations d’écriture. 
+
+---
+
+## 7. Analyse Approfondie : Évaluation (L’Heure de Vérité)
+
+### A. Accuracy Globale
+
+Le modèle Random Forest obtient une **accuracy supérieure à 95 %** sur le jeu de test, ce qui signifie que la majorité écrasante des chiffres manuscrits est correctement reconnue.
+
+### B. Rapport de Classification
+
+Le rapport de classification (`classification_report`) donne, pour chaque chiffre de 0 à 9 : 
+
+- **Precision** : quand le modèle prédit ce chiffre, à quel point il a raison.  
+- **Recall** : parmi tous les exemples de ce chiffre, combien il en détecte correctement.  
+- **F1‑score** : synthèse équilibrée des deux précédents.
+
+Les scores sont élevés et relativement homogènes entre les classes, ce qui montre que le modèle ne se contente pas d’être bon sur une seule classe comme le 0 ou le 1, mais fonctionne bien sur l’ensemble des chiffres. 
+
+### C. La Matrice de Confusion
+
+La matrice de confusion (10×10) est visualisée sous forme de heatmap : 
+
+- La **diagonale** regroupe les prédictions correctes (vrai chiffre = chiffre prédit).  
+- Les **valeurs hors diagonale** révèlent les confusions (par exemple certains 3 pris pour des 5, certains 4 pris pour des 9).  
+
+Ces motifs d’erreurs donnent des pistes d’amélioration :  
+- Modèles plus spécialisés (par exemple CNN).  
+- Features additionnelles plus adaptées à la structure 2D des images.
+
+---
+
+## Conclusion du Projet
+
+Ce rapport montre que la Data Science ne s’arrête pas à `model.fit()`. C’est une chaîne de décisions logiques où : 
+
+- Le **contexte métier** (OCR) guide le choix des données (Digits 8×8) et des métriques (accuracy, F1 par chiffre).  
+- Le **pipeline technique** (simulation de NaN, imputation, EDA, split stratifié) prépare un terrain propre pour le modèle.  
+- L’algorithme **Random Forest** fournit une solution robuste et performante à un problème multi‑classes réel.  
+- L’**audit de performance** (rapport de classification, matrice de confusion) permet d’interpréter les résultats et d’identifier les axes d’amélioration.
+ 
