@@ -4,7 +4,7 @@
 ---
 # 📘 GRAND GUIDE : ANATOMIE D'UN PROJET DATA SCIENCE - DIGITS
 
-Ce document décortique chaque étape du cycle de vie d'un projet de Machine Learning sur le dataset **Digits**. Il est conçu pour passer du niveau "débutant qui copie du code" au niveau "ingénieur qui comprend les mécanismes internes".
+Ce document décortique chaque étape du cycle de vie d'un projet de Machine Learning appliqué au dataset Digits. Il a pour objectif de faire évoluer le lecteur d’un profil de "débutant qui exécute du code" vers celui d’un "praticien qui conçoit, comprend et justifie chaque choix technique du pipeline".
 
 ---
 
