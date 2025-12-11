@@ -1,4 +1,4 @@
-<img src="https://s11.aconvert.com/convert/p3r68-cdx67/05smd-n497j.jpg"/>
+<img src="https://s11.aconvert.com/convert/p3r68-cdx67/eoxpv-p0ojs.jpg"/>
 
 
 # 📊 Projet Data Science : Reconnaissance de Chiffres Manuscrits (Digits)
