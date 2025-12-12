@@ -31,5 +31,7 @@
 └── outputs/                        ← Visualisations générées
 ```
 
-
-
+### Lien vers la vidéo explicative : 
+---
+https://drive.google.com/file/d/16ChvjfufdpgpVOKF0owvWxfBZtlDWn97/view?usp=sharing
+---
