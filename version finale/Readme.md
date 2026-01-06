@@ -1,6 +1,15 @@
 <img src="figures/JAMAL YASSINE CAC2.jpg" style="height:364px;margin-right:332px"/>
 
 
+
+---
+# JAMAL YASSINE
+
+**Numéro d'étudiant** : 22007655
+
+**Classe** : CAC2
+
+---
 # 📊 Projet Data Science : Reconnaissance de Chiffres Manuscrits (Digits)
 
 ## 🎯 Thématique
