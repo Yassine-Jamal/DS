@@ -1,4 +1,4 @@
-<img src="https://s11.aconvert.com/convert/p3r68-cdx67/eoxpv-p0ojs.jpg"/>
+<img src="figures/JAMAL YASSINE CAC2.jpg" style="height:364px;margin-right:332px"/>
 
 
 # 📊 Projet Data Science : Reconnaissance de Chiffres Manuscrits (Digits)
